@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School Register</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <p class="brand-mark">Student Register</p>
+      <h1>Dashboard</h1>
+    </div>
+    <div class="who" id="whoBox">
+      <button class="ghost" id="logoutBtn" style="margin-top:6px;">Log out</button>
+    </div>
+  </header>
+
+  <div class="stat-strip" id="statStrip" style="margin-bottom:18px;"></div>
+
+  <nav class="tabs" id="tabNav">
+    <button class="tab-btn active" data-tab="students">Students</button>
+    <button class="tab-btn" data-tab="add">Add Student</button>
+    <button class="tab-btn" data-tab="insights">Insights</button>
+    <button class="tab-btn admin-only" data-tab="users" style="display:none;">Manage Users</button>
+    <button class="tab-btn" data-tab="account">Account</button>
+  </nav>
+
+  <!-- STUDENTS -->
+  <div class="panel active" id="panel-students">
+    <div class="toolbar">
+      <input type="text" class="search-box" id="searchInput" placeholder="Search by name or ID…">
+      <select class="filter" id="classFilter"><option value="">All classes</option></select>
+      <button class="ghost" id="exportBtn">Export CSV</button>
+    </div>
+    <div class="grid" id="studentGrid"></div>
+    <div class="empty" id="emptyState" style="display:none;">
+      <b>No students found</b>
+      <span id="emptyHint">Add your first student using the "Add Student" tab.</span>
+    </div>
+  </div>
+
+  <!-- ADD STUDENT -->
+  <div class="panel" id="panel-add">
+    <div class="form-card">
+      <div id="addMsg"></div>
+      <div class="form-row">
+        <label>Full name</label>
+        <input type="text" id="f_name" placeholder="e.g. Rashida Begum">
+      </div>
+      <div class="form-grid2">
+        <div class="form-row">
+          <label>Class / Grade</label>
+          <input type="text" id="f_class" placeholder="e.g. Class 4 or LIT-B2">
+        </div>
+        <div class="form-row">
+          <label>Session</label>
+          <select id="f_session">
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid2">
+        <div class="form-row">
+          <label>Guardian name</label>
+          <input type="text" id="f_guardian" placeholder="Optional">
+        </div>
+        <div class="form-row">
+          <label>Contact number</label>
+          <input type="text" id="f_contact" placeholder="Optional">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Notes</label>
+        <input type="text" id="f_notes" placeholder="Optional">
+      </div>
+      <button class="primary" id="saveStudentBtn">Save student</button>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="panel" id="panel-insights">
+    <div class="form-card" style="max-width:640px;">
+      <h2 style="margin-top:0; font-size:16px;">Average score by class</h2>
+      <div class="bar-chart" id="barChart"></div>
+      <p id="noResultsHint" style="color:var(--slate); font-size:13px; display:none;">No results logged yet — averages will appear here once results are added.</p>
+    </div>
+  </div>
+
+  <!-- MANAGE USERS (admin only) -->
+  <div class="panel" id="panel-users">
+    <div class="form-card" style="max-width:560px; margin-bottom:20px;">
+      <h2 style="margin-top:0; font-size:16px;">Add a teacher or admin account</h2>
+      <div id="userMsg"></div>
+      <div class="form-row">
+        <label>Full name</label>
+        <input type="text" id="u_name">
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input type="email" id="u_email">
+      </div>
+      <div class="form-row">
+        <label>Temporary password</label>
+        <input type="text" id="u_password" placeholder="At least 8 characters">
+      </div>
+      <div class="form-grid2">
+        <div class="form-row">
+          <label>Role</label>
+          <select id="u_role">
+            <option value="teacher">Teacher</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-row" id="u_classRow">
+          <label>Class (teachers only)</label>
+          <input type="text" id="u_class" placeholder="e.g. Class 4">
+        </div>
+      </div>
+      <button class="primary" id="createUserBtn">Create account</button>
+    </div>
+
+    <table class="admin-table" id="usersTable">
+      <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Class</th><th></th></tr></thead>
+      <tbody id="usersBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div class="panel" id="panel-account">
+    <div class="form-card">
+      <h2 style="margin-top:0; font-size:16px;">Change password</h2>
+      <div id="pwMsg"></div>
+      <div class="form-row">
+        <label>Current password</label>
+        <input type="password" id="pw_current">
+      </div>
+      <div class="form-row">
+        <label>New password</label>
+        <input type="password" id="pw_new">
+      </div>
+      <button class="primary" id="changePwBtn">Update password</button>
+    </div>
+  </div>
+
+  <footer class="note">Logged in as <span id="footerWho"></span></footer>
+</div>
+
+<!-- STUDENT DETAIL MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="close-x" id="closeModal">✕</button>
+    <h2 id="m_name"></h2>
+    <p class="sub" id="m_meta"></p>
+    <div id="m_details" style="font-size:13.5px; color:var(--slate); margin-bottom:14px;"></div>
+
+    <div class="modal-tabs">
+      <button class="modal-tab-btn active" data-mtab="results">Results</button>
+      <button class="modal-tab-btn" data-mtab="attendance">Attendance</button>
+      <button class="modal-tab-btn" data-mtab="fees">Fees</button>
+    </div>
+
+    <div class="modal-panel active" id="mpanel-results">
+      <table class="results">
+        <thead><tr><th>Subject</th><th>Term</th><th>Score</th><th>Grade</th><th></th></tr></thead>
+        <tbody id="m_resultsBody"></tbody>
+      </table>
+
+      <div class="add-result-row">
+        <div class="form-row">
+          <label>Subject</label>
+          <input type="text" id="r_subject" placeholder="e.g. Burmese">
+        </div>
+        <div class="form-row">
+          <label>Term</label>
+          <input type="text" id="r_term" placeholder="e.g. Term 2">
+        </div>
+        <div class="form-row">
+          <label>Score</label>
+          <input type="number" id="r_score" min="0" max="100">
+        </div>
+        <button class="primary" id="addResultBtn">Add</button>
+      </div>
+    </div>
+
+    <div class="modal-panel" id="mpanel-attendance">
+      <table class="results">
+        <thead><tr><th>Date</th><th>AM</th><th>PM</th><th></th></tr></thead>
+        <tbody id="m_attendanceBody"></tbody>
+      </table>
+      <div class="add-result-row" style="grid-template-columns:1.2fr 0.7fr 0.7fr auto;">
+        <div class="form-row">
+          <label>Date</label>
+          <input type="date" id="a_date">
+        </div>
+        <div class="form-row">
+          <label>AM present</label>
+          <select id="a_am"><option value="1">Yes</option><option value="0">No</option></select>
+        </div>
+        <div class="form-row">
+          <label>PM present</label>
+          <select id="a_pm"><option value="1">Yes</option><option value="0">No</option></select>
+        </div>
+        <button class="primary" id="addAttendanceBtn">Save</button>
+      </div>
+    </div>
+
+    <div class="modal-panel" id="mpanel-fees">
+      <div class="fee-summary" id="feeSummary"></div>
+      <table class="results">
+        <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Note</th><th></th></tr></thead>
+        <tbody id="m_feesBody"></tbody>
+      </table>
+      <div class="add-result-row">
+        <div class="form-row">
+          <label>Type</label>
+          <select id="f_type">
+            <option value="charge">Charge (fee due)</option>
+            <option value="payment">Payment (received)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Amount</label>
+          <input type="number" id="f_amount" min="0" step="0.01">
+        </div>
+        <div class="form-row">
+          <label>Note</label>
+          <input type="text" id="f_note" placeholder="e.g. July fee">
+        </div>
+        <button class="primary" id="addFeeBtn">Add</button>
+      </div>
+    </div>
+
+    <div class="row-actions">
+      <button class="danger" id="deleteStudentBtn">Delete student</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
